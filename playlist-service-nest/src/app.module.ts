@@ -1,21 +1,9 @@
 import { Module } from '@nestjs/common';
-import { join } from 'path';
-import { ClientsModule, Transport } from '@nestjs/microservices';
-import { PlaylistController } from './app.controller';
+import {PlaylistModule} from "./playlist/playlist.module";
+import {ClientsModule, Transport} from "@nestjs/microservices";
+import {join} from "path";
 
 @Module({
-  imports: [
-    ClientsModule.register([
-      {
-        name: 'PLAYLIST_PACKAGE',
-        transport: Transport.GRPC,
-        options: {
-          package: 'playlist',
-          protoPath: join(__dirname, '../proto/playlist.proto'),
-        },
-      },
-    ]),
-  ],
-  controllers: [PlaylistController],
+  imports: [PlaylistModule],
 })
 export class AppModule {}
