@@ -1,0 +1,21 @@
+syntax = "proto3";
+import "google/protobuf/empty.proto";
+
+package playlist;
+
+service PlaylistService {
+  rpc Play (google.protobuf.Empty) returns (PlaylistResponse) {}
+  rpc Pause (google.protobuf.Empty) returns (PlaylistResponse) {}
+  rpc AddSong (AddSongRequest) returns (PlaylistResponse) {}
+  rpc Next (google.protobuf.Empty) returns (PlaylistResponse) {}
+  rpc Prev (google.protobuf.Empty) returns (PlaylistResponse) {}
+}
+
+message AddSongRequest {
+  string title = 1;
+  int32 duration = 2;
+}
+
+message PlaylistResponse {
+  string status = 1;
+}
