@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
-import path from "path";
-import {ClientsModule, Transport} from "@nestjs/microservices";
-import {PlaylistController} from "./app.controller";
+import { join } from 'path';
+import { ClientsModule, Transport } from '@nestjs/microservices';
+import { PlaylistController } from './app.controller';
 
 @Module({
   imports: [
@@ -11,7 +11,7 @@ import {PlaylistController} from "./app.controller";
         transport: Transport.GRPC,
         options: {
           package: 'playlist',
-          protoPath: path.join(__dirname, '../proto/playlist.proto'),
+          protoPath: join(__dirname, '../proto/playlist.proto'),
         },
       },
     ]),
