@@ -9,11 +9,22 @@ service PlaylistService {
   rpc AddSong (AddSongRequest) returns (PlaylistResponse) {}
   rpc Next (google.protobuf.Empty) returns (PlaylistResponse) {}
   rpc Prev (google.protobuf.Empty) returns (PlaylistResponse) {}
+  rpc GetAllSongs (google.protobuf.Empty) returns (SongsResponse) {}
 }
 
 message AddSongRequest {
-  string title = 1;
-  int32 duration = 2;
+  string title = 2;
+  int32 duration = 3;
+}
+
+message SongsResponse {
+  repeated SongResponse songs = 1;
+}
+
+message SongResponse {
+  int32 id = 1;
+  string title = 2;
+  int32 duration = 3;
 }
 
 message PlaylistResponse {

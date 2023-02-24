@@ -1,14 +1,16 @@
 interface ISong {
-    duration: number;
-    title: string;
+  id: number;
+  duration: number;
+  title: string;
 }
 
-function Song(duration: number, title: string): ISong {
-    return {
-        duration: duration,
-        title: title
-    }
+function Song(id: number, title: string, duration: number): ISong {
+  return {
+    id: id,
+    duration: duration,
+    title: title,
+  };
 }
 
-export type {ISong};
-export {Song};
+export type { ISong };
+export { Song };

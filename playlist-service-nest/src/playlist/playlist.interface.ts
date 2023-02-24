@@ -1,16 +1,16 @@
-import {ISong} from "./song.interface";
+import { ISong } from './song.interface';
 
 interface IPlaylistService {
+  addSong(song: ISong): void;
 
-    addSong(song: ISong): void;
+  play(): void;
 
-    play(): void;
+  pause(): void;
 
-    pause(): void;
+  next(): void;
 
-    next(): void;
-
-    prev(): void;
+  prev(): void;
+  getAllSongs(): ISong[];
 }
 
-export default IPlaylistService
+export default IPlaylistService;

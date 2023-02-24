@@ -1,8 +1,5 @@
 import { Module } from '@nestjs/common';
-import {PlaylistModule} from "./playlist/playlist.module";
-import {ClientsModule, Transport} from "@nestjs/microservices";
-import {join} from "path";
-
+import { PlaylistModule } from './playlist/playlist.module';
 @Module({
   imports: [PlaylistModule],
 })

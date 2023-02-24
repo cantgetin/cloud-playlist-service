@@ -1,18 +1,18 @@
-import {ISong} from "./song.interface";
+import { ISong } from './song.interface';
 
 interface ISongNode {
-    next: ISongNode | null;
-    prev: ISongNode | null;
-    song: ISong;
+  next: ISongNode | null;
+  prev: ISongNode | null;
+  song: ISong;
 }
 
 function SongNode(song: ISong): ISongNode {
-    return {
-        next: null,
-        prev: null,
-        song: song
-    }
+  return {
+    next: null,
+    prev: null,
+    song: song,
+  };
 }
 
-export type {ISongNode};
-export {SongNode};
+export type { ISongNode };
+export { SongNode };

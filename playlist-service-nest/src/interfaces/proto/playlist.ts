@@ -32,8 +32,21 @@ export namespace playlist {
       metadata?: Metadata,
       ...rest: any[]
     ): Observable<PlaylistResponse>;
+    getAllSongs(
+      data: google.protobuf.Empty,
+      metadata?: Metadata,
+      ...rest: any[]
+    ): Observable<SongsResponse>;
   }
   export interface AddSongRequest {
+    title?: string;
+    duration?: number;
+  }
+  export interface SongsResponse {
+    songs?: playlist.SongResponse[];
+  }
+  export interface SongResponse {
+    id?: number;
     title?: string;
     duration?: number;
   }

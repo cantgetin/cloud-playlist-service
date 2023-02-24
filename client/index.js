@@ -34,25 +34,30 @@ const increment = () => {
 
 const getNextId = increment()
 
-const play = () => playlistService.play({}, (r) => {
-    console.log(r)
+const play = () => playlistService.play({}, (error, response) => {
+    console.log(response.status)
 })
 
-const pause = () => playlistService.pause({}, (r) => {
-    console.log(r)
+const pause = () => playlistService.pause({}, (error, response) => {
+    console.log(response.status)
 })
 const addSong = () => {
-    playlistService.addSong({title: `song ${getNextId()}`, duration: 5}, (r) => {
-        console.log(r)
+    playlistService.addSong({title: `song ${getNextId()}`, duration: 5}, (error, response) => {
+        console.log(response.status)
+    })
+}
+const getAllSongs = () => {
+    playlistService.getAllSongs({}, (error, response) => {
+        console.log(response)
     })
 }
 
-const prev = () => playlistService.prev({}, (r) => {
-    console.log(r)
+const prev = () => playlistService.prev({}, (error, response) => {
+    console.log(response.status)
 })
 
-const next = () => playlistService.next({}, (r) => {
-    console.log(r)
+const next = () => playlistService.next({}, (error, response) => {
+    console.log(response.status)
 })
 
 function handleCommand(commandString) {
@@ -71,6 +76,9 @@ function handleCommand(commandString) {
             break;
         case "prev":
             prev()
+            break;
+        case "getAllSongs":
+            getAllSongs()
             break;
         case "exit":
             r1.close();
