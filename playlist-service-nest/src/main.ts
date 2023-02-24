@@ -6,18 +6,6 @@ import {Transport, MicroserviceOptions} from '@nestjs/microservices';
 import {INestMicroservice} from "@nestjs/common";
 
 async function bootstrap() {
-    // const app = await NestFactory.createMicroservice<MicroserviceOptions>(
-    //   AppModule,
-    //   {
-    //     transport: Transport.GRPC,
-    //     options: {
-    //       url: '0.0.0.0:50051',
-    //       package: 'playlist',
-    //       protoPath: join(__dirname, '../proto/playlist.proto'),
-    //     },
-    //   },
-    // );
-
     const app: INestMicroservice = await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
         transport: Transport.GRPC,
         options: {

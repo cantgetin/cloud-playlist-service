@@ -1,0 +1,13 @@
+{
+  "name": "untitled7",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "startService": "cd playlist-service-nest & npm run start:dev",
+    "startClientCli": "cd client & node index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
