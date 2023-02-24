@@ -9,6 +9,9 @@ import SongsResponse = playlist.SongsResponse;
 import { uid } from '../utils/uid';
 import AddSongRequest = playlist.AddSongRequest;
 import SongResponse = playlist.SongResponse;
+import AddSongsRequest = playlist.AddSongsRequest;
+import UpdateSongRequest = playlist.UpdateSongRequest;
+import IdRequest = playlist.IdRequest;
 
 @Controller()
 export class PlaylistController {
@@ -22,7 +25,6 @@ export class PlaylistController {
     metadata: Metadata,
     call: ServerUnaryCall<any, any>,
   ): SongsResponse {
-    console.log('wtf');
     try {
       return { songs: this.service.getAllSongs() };
     } catch (ex) {
@@ -31,53 +33,65 @@ export class PlaylistController {
     }
   }
 
-  // @GrpcMethod('PlaylistService','Read')
-  // getSongById(
-  //     data: google.protobuf.Empty,
-  //     metadata: Metadata,
-  //     call: ServerUnaryCall<any, any>,
-  // ): PlaylistResponse {
-  //     console.log('wtf')
-  //     try {
-  //         //this.service.play()
-  //         return {status: "OK"}
-  //     }
-  //     catch (ex) {
-  //         return {status: ex.toString()}
-  //     }
-  // }
-  //
-  // @GrpcMethod('PlaylistService','Read')
-  // update(
-  //     data: google.protobuf.Empty,
-  //     metadata: Metadata,
-  //     call: ServerUnaryCall<any, any>,
-  // ): PlaylistResponse {
-  //     console.log('wtf')
-  //     try {
-  //         //this.service.play()
-  //         return {status: "OK"}
-  //     }
-  //     catch (ex) {
-  //         return {status: ex.toString()}
-  //     }
-  // }
-  //
-  // @GrpcMethod('PlaylistService','Read')
-  // delete(
-  //     data: google.protobuf.Empty,
-  //     metadata: Metadata,
-  //     call: ServerUnaryCall<any, any>,
-  // ): PlaylistResponse {
-  //     console.log('wtf')
-  //     try {
-  //         //this.service.play()
-  //         return {status: "OK"}
-  //     }
-  //     catch (ex) {
-  //         return {status: ex.toString()}
-  //     }
-  // }
+  @GrpcMethod('PlaylistService', 'GetSongById')
+  getSongById(
+    data: IdRequest,
+    metadata: Metadata,
+    call: ServerUnaryCall<any, any>,
+  ): SongResponse {
+    try {
+      return this.service.getSongById(data.id);
+    } catch (ex) {
+      return ex;
+    }
+  }
+
+  @GrpcMethod('PlaylistService', 'UpdateSong')
+  updateSong(
+    data: UpdateSongRequest,
+    metadata: Metadata,
+    call: ServerUnaryCall<any, any>,
+  ): PlaylistResponse {
+    try {
+      let newSong: Omit<ISong, 'id'> = {
+        duration: data.newSong.duration,
+        title: data.newSong.title,
+      };
+      this.service.updateSong(data.id, newSong);
+      return { status: 'OK' };
+    } catch (ex) {
+      console.log(ex);
+      return { status: ex.toString() };
+    }
+  }
+
+  @GrpcMethod('PlaylistService', 'DeleteSong')
+  deleteSong(
+    data: IdRequest,
+    metadata: Metadata,
+    call: ServerUnaryCall<any, any>,
+  ): PlaylistResponse {
+    try {
+      this.service.deleteSong(data.id);
+      return { status: 'OK' };
+    } catch (ex) {
+      return { status: ex.toString() };
+    }
+  }
+
+  @GrpcMethod('PlaylistService', 'Clear')
+  clear(
+    data: google.protobuf.Empty,
+    metadata: Metadata,
+    call: ServerUnaryCall<any, any>,
+  ): PlaylistResponse {
+    try {
+      this.service.clear();
+      return { status: 'OK' };
+    } catch (ex) {
+      return { status: ex.toString() };
+    }
+  }
 
   @GrpcMethod('PlaylistService', 'Play')
   play(
@@ -85,7 +99,6 @@ export class PlaylistController {
     metadata: Metadata,
     call: ServerUnaryCall<any, any>,
   ): PlaylistResponse {
-    console.log('wtf');
     try {
       this.service.play();
       return { status: 'OK' };
@@ -116,6 +129,25 @@ export class PlaylistController {
   ): PlaylistResponse {
     try {
       this.service.addSong(Song(uid(), data.title, data.duration));
+      return { status: 'OK' };
+    } catch (ex) {
+      return { status: ex.toString() };
+    }
+  }
+
+  @GrpcMethod('PlaylistService', 'AddSongs')
+  addSongs(
+    data: AddSongsRequest,
+    metadata: Metadata,
+    call: ServerUnaryCall<any, any>,
+  ): PlaylistResponse {
+    try {
+      let songs: ISong[] = [];
+      data.songs.forEach((song) =>
+        songs.push({ title: song.title, id: uid(), duration: song.duration }),
+      );
+
+      this.service.addSongs(songs);
       return { status: 'OK' };
     } catch (ex) {
       return { status: ex.toString() };

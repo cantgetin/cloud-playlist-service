@@ -22,6 +22,11 @@ export namespace playlist {
       metadata?: Metadata,
       ...rest: any[]
     ): Observable<PlaylistResponse>;
+    addSongs(
+      data: AddSongsRequest,
+      metadata?: Metadata,
+      ...rest: any[]
+    ): Observable<PlaylistResponse>;
     next(
       data: google.protobuf.Empty,
       metadata?: Metadata,
@@ -37,10 +42,40 @@ export namespace playlist {
       metadata?: Metadata,
       ...rest: any[]
     ): Observable<SongsResponse>;
+    getSongById(
+      data: IdRequest,
+      metadata?: Metadata,
+      ...rest: any[]
+    ): Observable<SongResponse>;
+    updateSong(
+      data: UpdateSongRequest,
+      metadata?: Metadata,
+      ...rest: any[]
+    ): Observable<PlaylistResponse>;
+    deleteSong(
+      data: IdRequest,
+      metadata?: Metadata,
+      ...rest: any[]
+    ): Observable<PlaylistResponse>;
+    clear(
+      data: google.protobuf.Empty,
+      metadata?: Metadata,
+      ...rest: any[]
+    ): Observable<PlaylistResponse>;
+  }
+  export interface IdRequest {
+    id?: number;
+  }
+  export interface AddSongsRequest {
+    songs?: playlist.AddSongRequest[];
   }
   export interface AddSongRequest {
     title?: string;
     duration?: number;
+  }
+  export interface UpdateSongRequest {
+    id?: number;
+    newSong?: playlist.AddSongRequest;
   }
   export interface SongsResponse {
     songs?: playlist.SongResponse[];
