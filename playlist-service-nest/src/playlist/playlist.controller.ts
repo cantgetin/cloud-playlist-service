@@ -1,8 +1,7 @@
-import { Controller, Inject } from '@nestjs/common';
-import { ClientGrpc, GrpcMethod, RpcException } from '@nestjs/microservices';
+import { Controller, Inject, UsePipes } from '@nestjs/common';
+import { GrpcMethod, RpcException } from '@nestjs/microservices';
 import IPlaylistService from './playlist.interface';
-import { google, playlist } from '../interfaces/proto/playlist';
-import { Metadata, ServerUnaryCall } from '@grpc/grpc-js';
+import { playlist } from '../interfaces/proto/playlist';
 import PlaylistResponse = playlist.PlaylistResponse;
 import { ISong, Song } from './song.interface';
 import SongsResponse = playlist.SongsResponse;
@@ -12,6 +11,12 @@ import SongResponse = playlist.SongResponse;
 import AddSongsRequest = playlist.AddSongsRequest;
 import UpdateSongRequest = playlist.UpdateSongRequest;
 import IdRequest = playlist.IdRequest;
+import { JoiValidationPipe } from './validation.pipe';
+import {
+  addSongsRequestSchema,
+  idRequestSchema,
+  updateSongRequestSchema,
+} from './validation.schemas';
 
 @Controller()
 export class PlaylistController {
@@ -29,7 +34,9 @@ export class PlaylistController {
   }
 
   @GrpcMethod('PlaylistService', 'GetSongById')
+  @UsePipes(new JoiValidationPipe(idRequestSchema))
   getSongById(data: IdRequest): SongResponse {
+    if (!data && !data.id) throw new RpcException('No ID provided');
     try {
       return this.service.getSongById(data.id);
     } catch (ex) {
@@ -38,6 +45,7 @@ export class PlaylistController {
   }
 
   @GrpcMethod('PlaylistService', 'UpdateSong')
+  @UsePipes(new JoiValidationPipe(updateSongRequestSchema))
   updateSong(data: UpdateSongRequest): PlaylistResponse {
     try {
       let newSong: Omit<ISong, 'id'> = {
@@ -52,6 +60,7 @@ export class PlaylistController {
   }
 
   @GrpcMethod('PlaylistService', 'DeleteSong')
+  @UsePipes(new JoiValidationPipe(idRequestSchema))
   deleteSong(data: IdRequest): PlaylistResponse {
     try {
       this.service.deleteSong(data.id);
@@ -92,6 +101,7 @@ export class PlaylistController {
   }
 
   @GrpcMethod('PlaylistService', 'AddSong')
+  @UsePipes(new JoiValidationPipe(addSongsRequestSchema))
   addSong(data: AddSongRequest): PlaylistResponse {
     try {
       this.service.addSong(Song(uid(), data.title, data.duration));
@@ -102,6 +112,7 @@ export class PlaylistController {
   }
 
   @GrpcMethod('PlaylistService', 'AddSongs')
+  @UsePipes(new JoiValidationPipe(addSongsRequestSchema))
   addSongs(data: AddSongsRequest): PlaylistResponse {
     try {
       let songs: ISong[] = [];
