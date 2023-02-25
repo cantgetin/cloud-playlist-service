@@ -38,16 +38,16 @@ class PlaylistService implements IPlaylistService {
 
   play(): void {
     if (!this.currentSong) {
-      this.currentSong = this.head;
-      this.remainingTime = this.currentSong!.song.duration;
+      if (this.head) {
+        this.currentSong = this.head;
+        this.remainingTime = this.currentSong!.song.duration;
+      } else throw new Error('There are no songs in that playlist');
     }
 
     this.currentSongStartTime = new Date();
     console.log(`Now playing: ${this.currentSong!.song.title}`);
 
-    if (this.playTimer) {
-      clearInterval(this.playTimer);
-    }
+    if (this.playTimer) clearInterval(this.playTimer);
     this.playTimer = setInterval(() => {
       this.remainingTime!--;
       if (this.remainingTime === 0) {
@@ -57,6 +57,7 @@ class PlaylistService implements IPlaylistService {
   }
 
   pause(): void {
+    if (!this.currentSong) throw new Error('No song is playing');
     if (this.playTimer) {
       clearInterval(this.playTimer);
       const elapsedTime =
@@ -71,28 +72,20 @@ class PlaylistService implements IPlaylistService {
   }
 
   next(): void {
-    if (!this.currentSong) {
-      return;
-    }
-    if (!this.currentSong.next) {
-      this.currentSong = this.head;
-    } else {
-      this.currentSong = this.currentSong.next;
-    }
+    if (!this.currentSong) throw new Error('No song is playing');
+    if (!this.currentSong.next) this.currentSong = this.head;
+    else this.currentSong = this.currentSong.next;
+
     this.currentSongStartTime = null;
     this.remainingTime = this.currentSong!.song.duration;
     this.play();
   }
 
   prev(): void {
-    if (!this.currentSong) {
-      return;
-    }
-    if (!this.currentSong.prev) {
-      this.currentSong = this.tail;
-    } else {
-      this.currentSong = this.currentSong.prev;
-    }
+    if (!this.currentSong) throw new Error('No song is playing');
+    if (!this.currentSong.prev) this.currentSong = this.tail;
+    else this.currentSong = this.currentSong.prev;
+
     this.currentSongStartTime = null;
     this.remainingTime = this.currentSong!.song.duration;
     this.play();
@@ -121,12 +114,13 @@ class PlaylistService implements IPlaylistService {
       }
       addSongs(this.head);
 
-      return songs.find((el) => el.id == id);
-    }
-    return null;
+      let song = songs.find((el) => el.id == id);
+      if (song) return song;
+      else throw new Error('Song with provided ID was not found');
+    } else throw new Error('There are no songs in that playlist');
   }
 
-  updateSong(id: number, newSong: Omit<ISong, 'id'>): boolean {
+  updateSong(id: number, newSong: Omit<ISong, 'id'>): void {
     if (this.head) {
       let songs: ISong[] = [];
       function addSongs(node: ISongNode) {
@@ -140,52 +134,52 @@ class PlaylistService implements IPlaylistService {
         song.duration = newSong.duration;
         song.title = newSong.title;
 
-        // if this song is currently playing recalculate remainingTime
-        // current song duration - remainingTime = time that song played
         if (this.currentSong && this.currentSong.song.id == id) {
           let timeThatSongPlayed: number =
             this.currentSong.song.duration - this.remainingTime;
           this.remainingTime = song.duration - timeThatSongPlayed;
         }
-
-        return true;
-      } else return false;
+      } else throw new Error('Song with provided ID was not found');
     }
   }
 
-  deleteSong(id: number): boolean {
-    if (this.currentSong && this.currentSong.song.id == id) return false;
-
+  deleteSong(id: number): void {
+    if (this.currentSong && this.currentSong.song.id == id)
+      throw new Error("You can't delete the song that is currently playing.");
     if (this.head) {
-      function deleteSong(node: ISongNode) {
-        if (node.song.id == id) {
-          if (node.next && node.prev) {
-            node.prev.next = node.next;
-          } else if (node.next && !node.prev) {
-            node.next.prev = null;
-          } else if (!node.next && node.prev) {
-            node.prev.next = null;
-          }
-          return true;
+      let songFound = false;
+      const deleteNode = (node: ISongNode | null): ISongNode | null => {
+        if (!node) return null;
+        if (node.song.id === id) {
+          songFound = true;
+          if (node === this.currentSong)
+            throw new Error(
+              "You can't delete the song that is currently playing.",
+            );
+          if (node === this.head) this.head = node.next;
+          if (node === this.tail) this.tail = node.prev;
+          if (node.prev) node.prev.next = node.next;
+          if (node.next) node.next.prev = node.prev;
+          console.log(`Deleted song: ${node.song.title}`);
+          return node.next;
         }
-        if (node.next) deleteSong(node.next);
-      }
-      deleteSong(this.head);
-      return false;
+        node.next = deleteNode(node.next);
+        return node;
+      };
+
+      const newHead = deleteNode(this.head);
+      if (!songFound)
+        throw new Error(`Song with ID ${id} not found in playlist`);
+      this.head = newHead;
     }
   }
-  clear(): boolean {
-    try {
-      this.head = null;
-      this.tail = null;
-      this.currentSong = null;
-      this.currentSongStartTime = null;
-      this.playTimer = null;
-      this.remainingTime = null;
-      return true;
-    } catch {
-      return false;
-    }
+  clear(): void {
+    this.head = null;
+    this.tail = null;
+    this.currentSong = null;
+    this.currentSongStartTime = null;
+    this.playTimer = null;
+    this.remainingTime = null;
   }
 }
 

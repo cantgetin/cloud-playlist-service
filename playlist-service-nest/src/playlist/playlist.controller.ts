@@ -1,5 +1,5 @@
 import { Controller, Inject } from '@nestjs/common';
-import { ClientGrpc, GrpcMethod } from '@nestjs/microservices';
+import { ClientGrpc, GrpcMethod, RpcException } from '@nestjs/microservices';
 import IPlaylistService from './playlist.interface';
 import { google, playlist } from '../interfaces/proto/playlist';
 import { Metadata, ServerUnaryCall } from '@grpc/grpc-js';
@@ -20,38 +20,25 @@ export class PlaylistController {
   ) {}
 
   @GrpcMethod('PlaylistService', 'GetAllSongs')
-  getAllSongs(
-    data: google.protobuf.Empty,
-    metadata: Metadata,
-    call: ServerUnaryCall<any, any>,
-  ): SongsResponse {
+  getAllSongs(): SongsResponse {
     try {
       return { songs: this.service.getAllSongs() };
     } catch (ex) {
-      console.log(ex);
-      return null;
+      throw new RpcException(ex);
     }
   }
 
   @GrpcMethod('PlaylistService', 'GetSongById')
-  getSongById(
-    data: IdRequest,
-    metadata: Metadata,
-    call: ServerUnaryCall<any, any>,
-  ): SongResponse {
+  getSongById(data: IdRequest): SongResponse {
     try {
       return this.service.getSongById(data.id);
     } catch (ex) {
-      return ex;
+      throw new RpcException(ex);
     }
   }
 
   @GrpcMethod('PlaylistService', 'UpdateSong')
-  updateSong(
-    data: UpdateSongRequest,
-    metadata: Metadata,
-    call: ServerUnaryCall<any, any>,
-  ): PlaylistResponse {
+  updateSong(data: UpdateSongRequest): PlaylistResponse {
     try {
       let newSong: Omit<ISong, 'id'> = {
         duration: data.newSong.duration,
@@ -60,87 +47,62 @@ export class PlaylistController {
       this.service.updateSong(data.id, newSong);
       return { status: 'OK' };
     } catch (ex) {
-      console.log(ex);
-      return { status: ex.toString() };
+      throw new RpcException(ex);
     }
   }
 
   @GrpcMethod('PlaylistService', 'DeleteSong')
-  deleteSong(
-    data: IdRequest,
-    metadata: Metadata,
-    call: ServerUnaryCall<any, any>,
-  ): PlaylistResponse {
+  deleteSong(data: IdRequest): PlaylistResponse {
     try {
       this.service.deleteSong(data.id);
       return { status: 'OK' };
     } catch (ex) {
-      return { status: ex.toString() };
+      throw new RpcException(ex);
     }
   }
 
   @GrpcMethod('PlaylistService', 'Clear')
-  clear(
-    data: google.protobuf.Empty,
-    metadata: Metadata,
-    call: ServerUnaryCall<any, any>,
-  ): PlaylistResponse {
+  clear(): PlaylistResponse {
     try {
       this.service.clear();
       return { status: 'OK' };
     } catch (ex) {
-      return { status: ex.toString() };
+      throw new RpcException(ex);
     }
   }
 
   @GrpcMethod('PlaylistService', 'Play')
-  play(
-    data: google.protobuf.Empty,
-    metadata: Metadata,
-    call: ServerUnaryCall<any, any>,
-  ): PlaylistResponse {
+  play(): PlaylistResponse {
     try {
       this.service.play();
       return { status: 'OK' };
     } catch (ex) {
-      return { status: ex.toString() };
+      throw new RpcException(ex);
     }
   }
 
   @GrpcMethod('PlaylistService', 'Pause')
-  pause(
-    data: google.protobuf.Empty,
-    metadata: Metadata,
-    call: ServerUnaryCall<any, any>,
-  ): PlaylistResponse {
+  pause(): PlaylistResponse {
     try {
       this.service.pause();
       return { status: 'OK' };
     } catch (ex) {
-      return { status: ex.toString() };
+      throw new RpcException(ex);
     }
   }
 
   @GrpcMethod('PlaylistService', 'AddSong')
-  addSong(
-    data: AddSongRequest,
-    metadata: Metadata,
-    call: ServerUnaryCall<any, any>,
-  ): PlaylistResponse {
+  addSong(data: AddSongRequest): PlaylistResponse {
     try {
       this.service.addSong(Song(uid(), data.title, data.duration));
       return { status: 'OK' };
     } catch (ex) {
-      return { status: ex.toString() };
+      throw new RpcException(ex);
     }
   }
 
   @GrpcMethod('PlaylistService', 'AddSongs')
-  addSongs(
-    data: AddSongsRequest,
-    metadata: Metadata,
-    call: ServerUnaryCall<any, any>,
-  ): PlaylistResponse {
+  addSongs(data: AddSongsRequest): PlaylistResponse {
     try {
       let songs: ISong[] = [];
       data.songs.forEach((song) =>
@@ -150,35 +112,27 @@ export class PlaylistController {
       this.service.addSongs(songs);
       return { status: 'OK' };
     } catch (ex) {
-      return { status: ex.toString() };
+      throw new RpcException(ex);
     }
   }
 
   @GrpcMethod('PlaylistService', 'Next')
-  next(
-    data: google.protobuf.Empty,
-    metadata: Metadata,
-    call: ServerUnaryCall<any, any>,
-  ): PlaylistResponse {
+  next(): PlaylistResponse {
     try {
       this.service.next();
       return { status: 'OK' };
     } catch (ex) {
-      return { status: ex.toString() };
+      throw new RpcException(ex);
     }
   }
 
   @GrpcMethod('PlaylistService', 'Prev')
-  prev(
-    data: google.protobuf.Empty,
-    metadata: Metadata,
-    call: ServerUnaryCall<any, any>,
-  ): PlaylistResponse {
+  prev(): PlaylistResponse {
     try {
       this.service.prev();
       return { status: 'OK' };
     } catch (ex) {
-      return { status: ex.toString() };
+      throw new RpcException(ex);
     }
   }
 }

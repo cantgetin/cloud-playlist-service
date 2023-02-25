@@ -56,7 +56,7 @@ const prev = () => playlistService.prev({}, (error, response) => {
     console.log(response.status)
 })
 
-const next = () => playlistService.next({}, (error, response) => {
+const next = () => playlistService.next((error, response) => {
     console.log(response.status)
 })
 

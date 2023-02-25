@@ -9,9 +9,9 @@ interface IPlaylistService {
   prev(): void;
   getAllSongs(): ISong[];
   getSongById(id: number): ISong;
-  updateSong(id: number, newSong: Omit<ISong, 'id'>): boolean;
-  deleteSong(id: number): boolean;
-  clear(): boolean;
+  updateSong(id: number, newSong: Omit<ISong, 'id'>): void;
+  deleteSong(id: number): void;
+  clear(): void;
 }
 
 export default IPlaylistService;
