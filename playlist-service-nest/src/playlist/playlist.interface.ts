@@ -7,8 +7,8 @@ interface IPlaylistService {
   pause(): void;
   next(): void;
   prev(): void;
-  getAllSongs(): ISong[];
-  getSongById(id: number): ISong;
+  getAllSongs(): Promise<ISong[]>;
+  getSongById(id: number): Promise<ISong>;
   updateSong(id: number, newSong: Omit<ISong, 'id'>): void;
   deleteSong(id: number): void;
   clear(): void;
