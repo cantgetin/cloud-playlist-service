@@ -32,6 +32,17 @@ export class RepositoryService {
       value: currentSongId,
     });
   }
+
+  async updatePlaylistPlayingState(
+    isPlaying: boolean,
+  ): Promise<[PlaylistPropsKeyValue, boolean]> {
+    let isPlayingInt = isPlaying ? 1 : 0;
+
+    return this.playlistPropsRepository.upsert({
+      key: 'isPlaying',
+      value: isPlayingInt,
+    });
+  }
   async getPlaylistRemainingTime(): Promise<PlaylistPropsKeyValue> {
     return this.playlistPropsRepository.findOne({
       where: { key: 'remainingTime' },
@@ -44,8 +55,16 @@ export class RepositoryService {
     });
   }
 
+  async getPlaylistPlayingState(): Promise<boolean> {
+    let isPlaying = await this.playlistPropsRepository.findOne({
+      where: { key: 'isPlaying' },
+    });
+    if (!isPlaying) return false;
+    return isPlaying.value == 1;
+  }
+
   async deleteSong(id: number): Promise<number> {
-    return this.songsRepository.destroy({ where: { _id: id } });
+    return this.songsRepository.destroy({ where: { id: id } });
   }
 
   async getAllSongs(): Promise<Song[]> {
@@ -62,11 +81,14 @@ export class RepositoryService {
   ): Promise<[affectedCount: number]> {
     return this.songsRepository.update(
       { title: newSong.title, duration: newSong.duration },
-      { where: { _id: id } },
+      { where: { id: id } },
     );
   }
   async clear(): Promise<number> {
-    await this.playlistPropsRepository.destroy();
+    await this.playlistPropsRepository.destroy({
+      where: {},
+      truncate: true,
+    });
     return this.songsRepository.destroy({
       where: {},
       truncate: true,

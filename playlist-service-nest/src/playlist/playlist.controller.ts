@@ -52,7 +52,7 @@ export class PlaylistController {
         duration: data.newSong.duration,
         title: data.newSong.title,
       };
-      this.service.updateSong(data.id, newSong);
+      await this.service.updateSong(data.id, newSong);
       return { status: 'OK' };
     } catch (ex) {
       throw new RpcException(ex);
@@ -63,7 +63,7 @@ export class PlaylistController {
   @UsePipes(new JoiValidationPipe(idRequestSchema))
   async deleteSong(data: IdRequest): Promise<PlaylistResponse> {
     try {
-      this.service.deleteSong(data.id);
+      await this.service.deleteSong(data.id);
       return { status: 'OK' };
     } catch (ex) {
       throw new RpcException(ex);
@@ -73,7 +73,7 @@ export class PlaylistController {
   @GrpcMethod('PlaylistService', 'Clear')
   async clear(): Promise<PlaylistResponse> {
     try {
-      this.service.clear();
+      await this.service.clear();
       return { status: 'OK' };
     } catch (ex) {
       throw new RpcException(ex);
@@ -83,7 +83,7 @@ export class PlaylistController {
   @GrpcMethod('PlaylistService', 'Play')
   async play(): Promise<PlaylistResponse> {
     try {
-      this.service.play();
+      await this.service.play();
       return { status: 'OK' };
     } catch (ex) {
       throw new RpcException(ex);
@@ -91,9 +91,9 @@ export class PlaylistController {
   }
 
   @GrpcMethod('PlaylistService', 'Pause')
-  pause(): PlaylistResponse {
+  async pause(): Promise<PlaylistResponse> {
     try {
-      this.service.pause();
+      await this.service.pause();
       return { status: 'OK' };
     } catch (ex) {
       throw new RpcException(ex);
@@ -102,9 +102,9 @@ export class PlaylistController {
 
   @GrpcMethod('PlaylistService', 'AddSong')
   @UsePipes(new JoiValidationPipe(songRequestSchema))
-  addSong(data: AddSongRequest): PlaylistResponse {
+  async addSong(data: AddSongRequest): Promise<PlaylistResponse> {
     try {
-      this.service.addSong(<Omit<ISong, 'id'>>{
+      await this.service.addSong(<Omit<ISong, 'id'>>{
         title: data.title,
         duration: data.duration,
       });
@@ -116,14 +116,14 @@ export class PlaylistController {
 
   @GrpcMethod('PlaylistService', 'AddSongs')
   @UsePipes(new JoiValidationPipe(addSongsRequestSchema))
-  addSongs(data: AddSongsRequest): PlaylistResponse {
+  async addSongs(data: AddSongsRequest): Promise<PlaylistResponse> {
     try {
       let songs: Omit<ISong, 'id'>[] = [];
       data.songs.forEach((song) =>
         songs.push({ title: song.title, duration: song.duration }),
       );
 
-      this.service.addSongs(songs);
+      await this.service.addSongs(songs);
       return { status: 'OK' };
     } catch (ex) {
       throw new RpcException(ex);
@@ -131,9 +131,9 @@ export class PlaylistController {
   }
 
   @GrpcMethod('PlaylistService', 'Next')
-  next(): PlaylistResponse {
+  async next(): Promise<PlaylistResponse> {
     try {
-      this.service.next();
+      await this.service.next();
       return { status: 'OK' };
     } catch (ex) {
       throw new RpcException(ex);
@@ -141,9 +141,9 @@ export class PlaylistController {
   }
 
   @GrpcMethod('PlaylistService', 'Prev')
-  prev(): PlaylistResponse {
+  async prev(): Promise<PlaylistResponse> {
     try {
-      this.service.prev();
+      await this.service.prev();
       return { status: 'OK' };
     } catch (ex) {
       throw new RpcException(ex);

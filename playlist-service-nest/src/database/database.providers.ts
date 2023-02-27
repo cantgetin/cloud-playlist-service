@@ -8,6 +8,7 @@ export const databaseProviders = [
       const sequelize = new Sequelize({
         dialect: 'sqlite',
         storage: 'playlist.db',
+        logging: false,
       });
       sequelize.addModels([Song, PlaylistPropsKeyValue]);
       await sequelize.sync();

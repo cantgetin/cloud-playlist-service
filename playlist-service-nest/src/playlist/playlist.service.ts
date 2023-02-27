@@ -3,7 +3,6 @@ import { ISongNode, SongNode } from './songNode.interface';
 import { ISong } from './song.interface';
 import { RepositoryService } from '../repository/repository.service';
 import { Inject } from '@nestjs/common';
-import { Song } from '../database/database.models';
 
 class PlaylistService implements IPlaylistService {
   head: ISongNode | null;
@@ -50,7 +49,6 @@ class PlaylistService implements IPlaylistService {
     let currentSongId = await this.repository.getPlaylistCurrentSongId();
     if (!currentSongId) return;
 
-    //find songnode that is currentPlayingSong
     function findSong(node) {
       if (!node) return null;
       if (node.song.id === currentSongId.value) {
@@ -59,6 +57,18 @@ class PlaylistService implements IPlaylistService {
     }
 
     this.currentSong = findSong(this.head);
+
+    let isPlaying = await this.repository.getPlaylistPlayingState();
+    if (!isPlaying) return;
+
+    console.log(`Now playing: ${this.currentSong!.song.title}`);
+    this.playTimer = setInterval(async () => {
+      this.remainingTime!--;
+      await this.repository.updatePlaylistRemainingTime(this.remainingTime);
+      if (this.remainingTime === 0) {
+        await this.next();
+      }
+    }, 1000);
   }
 
   async addSong(song: ISong): Promise<void> {
@@ -96,6 +106,7 @@ class PlaylistService implements IPlaylistService {
       } else throw new Error('There are no songs in that playlist');
     }
 
+    await this.repository.updatePlaylistPlayingState(true);
     this.currentSongStartTime = new Date();
     console.log(`Now playing: ${this.currentSong!.song.title}`);
 
@@ -118,6 +129,7 @@ class PlaylistService implements IPlaylistService {
       this.remainingTime =
         this.currentSong?.song.duration! - Math.floor(elapsedTime / 1000);
       this.currentSongStartTime = null;
+      await this.repository.updatePlaylistPlayingState(false);
       await this.repository.updatePlaylistRemainingTime(this.remainingTime);
       console.log(
         `Paused playback at ${this.currentSong?.song.title} (${this.remainingTime}s remaining)`,
