@@ -1,4 +1,4 @@
-import { Table, Column, Model, BelongsTo } from 'sequelize-typescript';
+import { Table, Column, Model, PrimaryKey } from 'sequelize-typescript';
 
 @Table
 export class Song extends Model {
@@ -9,9 +9,10 @@ export class Song extends Model {
 }
 
 @Table
-export class Playlist extends Model {
-  @BelongsTo(() => Song, { foreignKey: 'currentSongId' })
-  currentSong: Song;
+export class PlaylistPropsKeyValue extends Model {
+  @PrimaryKey
   @Column
-  remainingTime: number;
+  key: string;
+  @Column
+  value: number;
 }

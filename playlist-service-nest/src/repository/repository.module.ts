@@ -5,7 +5,15 @@ import { playlistProvider, songProvider } from './repository.providers';
 
 @Module({
   imports: [DatabaseModule],
-  providers: [RepositoryService, ...songProvider, ...playlistProvider],
-  exports: [RepositoryService, ...songProvider, ...playlistProvider],
+  providers: [
+    { provide: 'RepositoryService', useClass: RepositoryService },
+    ...songProvider,
+    ...playlistProvider,
+  ],
+  exports: [
+    { provide: 'RepositoryService', useClass: RepositoryService },
+    ...songProvider,
+    ...playlistProvider,
+  ],
 })
 export class RepositoryModule {}

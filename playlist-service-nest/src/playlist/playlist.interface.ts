@@ -1,8 +1,8 @@
 import { ISong } from './song.interface';
 
 interface IPlaylistService {
-  addSong(song: ISong): void;
-  addSongs(songs: ISong[]): void;
+  addSong(song: Omit<ISong, 'id'>): void;
+  addSongs(songs: Omit<ISong, 'id'>[]): void;
   play(): void;
   pause(): void;
   next(): void;

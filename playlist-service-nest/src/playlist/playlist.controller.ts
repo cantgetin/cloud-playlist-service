@@ -1,13 +1,12 @@
-import { Controller, Inject, UsePipes } from '@nestjs/common';
+import { Controller, Inject, UsePipes, ValidationPipe } from '@nestjs/common';
 import { GrpcMethod, RpcException } from '@nestjs/microservices';
 import IPlaylistService from './playlist.interface';
 import { playlist } from '../interfaces/proto/playlist';
 import { ISong, Song } from './song.interface';
-import { uid } from '../utils/uid';
-import { JoiValidationPipe } from './validation.pipe';
 import {
   addSongsRequestSchema,
   idRequestSchema,
+  songRequestSchema,
   updateSongRequestSchema,
 } from './validation.schemas';
 import PlaylistResponse = playlist.PlaylistResponse;
@@ -17,6 +16,7 @@ import SongResponse = playlist.SongResponse;
 import AddSongsRequest = playlist.AddSongsRequest;
 import UpdateSongRequest = playlist.UpdateSongRequest;
 import IdRequest = playlist.IdRequest;
+import { JoiValidationPipe } from './validation.pipe';
 
 @Controller()
 export class PlaylistController {
@@ -101,10 +101,13 @@ export class PlaylistController {
   }
 
   @GrpcMethod('PlaylistService', 'AddSong')
-  @UsePipes(new JoiValidationPipe(addSongsRequestSchema))
+  @UsePipes(new JoiValidationPipe(songRequestSchema))
   addSong(data: AddSongRequest): PlaylistResponse {
     try {
-      this.service.addSong(Song(uid(), data.title, data.duration));
+      this.service.addSong(<Omit<ISong, 'id'>>{
+        title: data.title,
+        duration: data.duration,
+      });
       return { status: 'OK' };
     } catch (ex) {
       throw new RpcException(ex);
@@ -115,9 +118,9 @@ export class PlaylistController {
   @UsePipes(new JoiValidationPipe(addSongsRequestSchema))
   addSongs(data: AddSongsRequest): PlaylistResponse {
     try {
-      let songs: ISong[] = [];
+      let songs: Omit<ISong, 'id'>[] = [];
       data.songs.forEach((song) =>
-        songs.push({ title: song.title, id: uid(), duration: song.duration }),
+        songs.push({ title: song.title, duration: song.duration }),
       );
 
       this.service.addSongs(songs);

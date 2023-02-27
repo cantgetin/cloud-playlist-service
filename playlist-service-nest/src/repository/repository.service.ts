@@ -1,14 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Playlist, Song } from '../database/database.models';
-import IRepositoryService from './repository.interface';
+import { PlaylistPropsKeyValue, Song } from '../database/database.models';
 
 @Injectable()
-export class RepositoryService implements IRepositoryService {
+export class RepositoryService {
   constructor(
     @Inject('SONGS_REPOSITORY')
     private songsRepository: typeof Song,
     @Inject('PLAYLISTS_REPOSITORY')
-    private playlistRepository: typeof Playlist,
+    private playlistPropsRepository: typeof PlaylistPropsKeyValue,
   ) {}
   async addSong(newSong: { title: string; duration: number }): Promise<Song> {
     return this.songsRepository.create({
@@ -16,20 +15,32 @@ export class RepositoryService implements IRepositoryService {
       duration: newSong.duration,
     });
   }
-
-  async addSongs(
-    songs: { title: string; duration: number }[],
-  ): Promise<Song[]> {
-    return this.songsRepository.bulkCreate(songs);
+  async updatePlaylistRemainingTime(
+    remainingTime: number,
+  ): Promise<[PlaylistPropsKeyValue, boolean]> {
+    return this.playlistPropsRepository.upsert({
+      key: 'remainingTime',
+      value: remainingTime,
+    });
   }
 
-  async updatePlaylist(
-    { title, duration },
-    remainingTime: number,
-  ): Promise<[Playlist, boolean]> {
-    return this.playlistRepository.upsert({
-      song: { title: title, duration: duration },
-      remainingTime: remainingTime,
+  async updatePlaylistCurrentSongId(
+    currentSongId: number,
+  ): Promise<[PlaylistPropsKeyValue, boolean]> {
+    return this.playlistPropsRepository.upsert({
+      key: 'currentSongId',
+      value: currentSongId,
+    });
+  }
+  async getPlaylistRemainingTime(): Promise<PlaylistPropsKeyValue> {
+    return this.playlistPropsRepository.findOne({
+      where: { key: 'remainingTime' },
+    });
+  }
+
+  async getPlaylistCurrentSongId(): Promise<PlaylistPropsKeyValue> {
+    return this.playlistPropsRepository.findOne({
+      where: { key: 'currentSongId' },
     });
   }
 
@@ -55,7 +66,7 @@ export class RepositoryService implements IRepositoryService {
     );
   }
   async clear(): Promise<number> {
-    await this.playlistRepository.destroy();
+    await this.playlistPropsRepository.destroy();
     return this.songsRepository.destroy({
       where: {},
       truncate: true,

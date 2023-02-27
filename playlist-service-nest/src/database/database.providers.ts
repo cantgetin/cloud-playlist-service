@@ -1,5 +1,5 @@
 import { Sequelize } from 'sequelize-typescript';
-import { Playlist, Song } from './database.models';
+import { PlaylistPropsKeyValue, Song } from './database.models';
 
 export const databaseProviders = [
   {
@@ -9,7 +9,7 @@ export const databaseProviders = [
         dialect: 'sqlite',
         storage: 'playlist.db',
       });
-      sequelize.addModels([Song, Playlist]);
+      sequelize.addModels([Song, PlaylistPropsKeyValue]);
       await sequelize.sync();
       return sequelize;
     },

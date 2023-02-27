@@ -8,9 +8,13 @@ export class JoiValidationPipe implements PipeTransform {
 
   transform(value: any, metadata: ArgumentMetadata) {
     const { error } = this.schema.validate(value);
-    if (error) {
-      throw new RpcException('Message validation failed');
+
+    // only validate parameter called "data"
+    if (metadata.data === 'data' && error) {
+      const message = `data validation failed: ${error}`;
+      throw new RpcException(message);
     }
+
     return value;
   }
 }

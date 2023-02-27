@@ -2,6 +2,8 @@ import IPlaylistService from './playlist.interface';
 import { ISongNode, SongNode } from './songNode.interface';
 import { ISong } from './song.interface';
 import { RepositoryService } from '../repository/repository.service';
+import { Inject } from '@nestjs/common';
+import { Song } from '../database/database.models';
 
 class PlaylistService implements IPlaylistService {
   head: ISongNode | null;
@@ -11,7 +13,9 @@ class PlaylistService implements IPlaylistService {
   playTimer: NodeJS.Timer | null;
   remainingTime: number | null;
 
-  constructor(private readonly repository: RepositoryService) {
+  constructor(
+    @Inject('RepositoryService') private readonly repository: RepositoryService,
+  ) {
     this.head = null;
     this.tail = null;
     this.currentSong = null;
@@ -20,8 +24,51 @@ class PlaylistService implements IPlaylistService {
     this.remainingTime = null;
   }
 
+  async onModuleInit() {
+    let songs = await this.repository.getAllSongs();
+    if (!songs) return;
+
+    songs.forEach((song) => {
+      const newNode = SongNode(<ISong>{
+        id: song.id,
+        duration: song.duration,
+        title: song.title,
+      });
+      if (!this.tail) {
+        this.head = newNode;
+        this.tail = newNode;
+      } else {
+        newNode.prev = this.tail;
+        this.tail.next = newNode;
+        this.tail = newNode;
+      }
+    });
+
+    let remainingTime = await this.repository.getPlaylistRemainingTime();
+    if (remainingTime) this.remainingTime = remainingTime.value;
+
+    let currentSongId = await this.repository.getPlaylistCurrentSongId();
+    if (!currentSongId) return;
+
+    //find songnode that is currentPlayingSong
+    function findSong(node) {
+      if (!node) return null;
+      if (node.song.id === currentSongId.value) {
+        return node;
+      }
+    }
+
+    this.currentSong = findSong(this.head);
+  }
+
   async addSong(song: ISong): Promise<void> {
-    const newNode = SongNode(song);
+    let songWithId = await this.repository.addSong(song);
+
+    const newNode = SongNode(<ISong>{
+      id: songWithId.id,
+      title: songWithId.title,
+      duration: songWithId.duration,
+    });
     if (!this.tail) {
       this.head = newNode;
       this.tail = newNode;
@@ -30,7 +77,6 @@ class PlaylistService implements IPlaylistService {
       this.tail.next = newNode;
       this.tail = newNode;
     }
-    await this.repository.addSong(song);
     console.log('Added new song: ' + song.title);
   }
 
@@ -43,10 +89,10 @@ class PlaylistService implements IPlaylistService {
       if (this.head) {
         this.currentSong = this.head;
         this.remainingTime = this.currentSong!.song.duration;
-        await this.repository.updatePlaylist(
-          this.currentSong.song,
-          this.remainingTime,
+        await this.repository.updatePlaylistCurrentSongId(
+          this.currentSong.song.id,
         );
+        await this.repository.updatePlaylistRemainingTime(this.remainingTime);
       } else throw new Error('There are no songs in that playlist');
     }
 
@@ -56,10 +102,7 @@ class PlaylistService implements IPlaylistService {
     if (this.playTimer) clearInterval(this.playTimer);
     this.playTimer = setInterval(async () => {
       this.remainingTime!--;
-      await this.repository.updatePlaylist(
-        this.currentSong.song,
-        this.remainingTime,
-      );
+      await this.repository.updatePlaylistRemainingTime(this.remainingTime);
       if (this.remainingTime === 0) {
         await this.next();
       }
@@ -75,10 +118,7 @@ class PlaylistService implements IPlaylistService {
       this.remainingTime =
         this.currentSong?.song.duration! - Math.floor(elapsedTime / 1000);
       this.currentSongStartTime = null;
-      await this.repository.updatePlaylist(
-        this.currentSong.song,
-        this.remainingTime,
-      );
+      await this.repository.updatePlaylistRemainingTime(this.remainingTime);
       console.log(
         `Paused playback at ${this.currentSong?.song.title} (${this.remainingTime}s remaining)`,
       );
@@ -92,10 +132,7 @@ class PlaylistService implements IPlaylistService {
 
     this.currentSongStartTime = null;
     this.remainingTime = this.currentSong!.song.duration;
-    await this.repository.updatePlaylist(
-      this.currentSong.song,
-      this.remainingTime,
-    );
+    await this.repository.updatePlaylistRemainingTime(this.remainingTime);
     await this.play();
   }
 
@@ -106,10 +143,7 @@ class PlaylistService implements IPlaylistService {
 
     this.currentSongStartTime = null;
     this.remainingTime = this.currentSong!.song.duration;
-    await this.repository.updatePlaylist(
-      this.currentSong.song,
-      this.remainingTime,
-    );
+    await this.repository.updatePlaylistRemainingTime(this.remainingTime);
     await this.play();
   }
 
@@ -131,10 +165,12 @@ class PlaylistService implements IPlaylistService {
 
     if (this.head) {
       let songs: ISong[] = [];
+
       function addSongs(node: ISongNode) {
         songs.push(node.song);
         if (node.next) addSongs(node.next);
       }
+
       addSongs(this.head);
 
       let song = songs.find((el) => el.id == id);
@@ -184,6 +220,7 @@ class PlaylistService implements IPlaylistService {
       this.head = newHead;
     }
   }
+
   async clear(): Promise<void> {
     await this.repository.clear();
 

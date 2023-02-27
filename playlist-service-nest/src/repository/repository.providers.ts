@@ -1,4 +1,4 @@
-import { Song, Playlist } from '../database/database.models';
+import { Song, PlaylistPropsKeyValue } from '../database/database.models';
 
 export const songProvider = [
   {
@@ -9,6 +9,6 @@ export const songProvider = [
 export const playlistProvider = [
   {
     provide: 'PLAYLISTS_REPOSITORY',
-    useValue: Playlist,
+    useValue: PlaylistPropsKeyValue,
   },
 ];
