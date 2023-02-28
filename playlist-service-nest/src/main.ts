@@ -12,7 +12,7 @@ async function bootstrap() {
       options: {
         url: '0.0.0.0:50051',
         package: 'playlist',
-        protoPath: join(__dirname, '../../proto/playlist.proto'),
+        protoPath: join(__dirname, './proto/playlist.proto'),
         loader: {
           keepCase: true,
           enums: String,
