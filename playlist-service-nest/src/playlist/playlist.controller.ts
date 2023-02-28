@@ -4,14 +4,14 @@ import * as schemas from './validation.schemas';
 import * as grpcEx from '../utils/grpc.exceptions';
 import * as serviceEx from './playlist.service.errors';
 import { JoiValidationPipe } from './validation.pipe';
-import { RpcExceptionFilter } from './exceptions.filter';
 import IPlaylistService from './playlist.interface';
 import { playlist } from '../interfaces/proto/playlist';
 import { ISong } from './song.interface';
 import { GrpcLoggingInterceptor } from '../utils/grpc.logging.interceptor';
+import { GrpcExceptionFilter } from '../utils/grpc.exceptions.filter';
 
 @Controller()
-@UseFilters(RpcExceptionFilter)
+@UseFilters(GrpcExceptionFilter)
 @UseInterceptors(GrpcLoggingInterceptor)
 export class PlaylistController {
   constructor(

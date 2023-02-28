@@ -1,5 +1,5 @@
-import Playlist from '../playlist/playlist';
-import { Song } from '../playlist/song';
+import Playlist from './playlist/playlist';
+import { Song } from './playlist/song';
 
 // Duration test
 
