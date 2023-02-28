@@ -1,52 +1,44 @@
-import { Controller, Inject, UsePipes, ValidationPipe } from '@nestjs/common';
-import { GrpcMethod, RpcException } from '@nestjs/microservices';
-import IPlaylistService from './playlist.interface';
-import { playlist } from '../interfaces/proto/playlist';
-import { ISong, Song } from './song.interface';
-import {
-  addSongsRequestSchema,
-  idRequestSchema,
-  songRequestSchema,
-  updateSongRequestSchema,
-} from './validation.schemas';
-import PlaylistResponse = playlist.PlaylistResponse;
-import SongsResponse = playlist.SongsResponse;
-import AddSongRequest = playlist.AddSongRequest;
-import SongResponse = playlist.SongResponse;
-import AddSongsRequest = playlist.AddSongsRequest;
-import UpdateSongRequest = playlist.UpdateSongRequest;
-import IdRequest = playlist.IdRequest;
+import { Controller, Inject, UseFilters, UsePipes } from '@nestjs/common';
+import { GrpcMethod } from '@nestjs/microservices';
+import * as schemas from './validation.schemas';
+import * as grpcEx from '../utils/grpc.exceptions';
+import * as serviceEx from './playlist.service.errors';
 import { JoiValidationPipe } from './validation.pipe';
+import { RpcExceptionFilter } from './exceptions.filter';
+import IPlaylistService from './playlist.interface';
+import {playlist} from '../interfaces/proto/playlist';
+import { ISong } from './song.interface';
 
 @Controller()
+@UseFilters(RpcExceptionFilter)
 export class PlaylistController {
   constructor(
     @Inject('PlaylistService') private readonly service: IPlaylistService,
   ) {}
 
   @GrpcMethod('PlaylistService', 'GetAllSongs')
-  async getAllSongs(): Promise<SongsResponse> {
+  async getAllSongs(): Promise<playlist.SongsResponse> {
     try {
       let songs = await this.service.getAllSongs();
       return { songs: songs };
     } catch (ex) {
-      throw new RpcException(ex);
+      this.handleServiceErrors(ex)
     }
   }
 
   @GrpcMethod('PlaylistService', 'GetSongById')
-  @UsePipes(new JoiValidationPipe(idRequestSchema))
-  async getSongById(data: IdRequest): Promise<SongResponse> {
+  @UsePipes(new JoiValidationPipe(schemas.idRequestSchema))
+  async getSongById(data: playlist.IdRequest): Promise<playlist.SongResponse> {
     try {
       return await this.service.getSongById(data.id);
     } catch (ex) {
-      throw new RpcException(ex);
+      this.handleServiceErrors(ex)
     }
   }
 
   @GrpcMethod('PlaylistService', 'UpdateSong')
-  @UsePipes(new JoiValidationPipe(updateSongRequestSchema))
-  async updateSong(data: UpdateSongRequest): Promise<PlaylistResponse> {
+  @UsePipes(new JoiValidationPipe(schemas.updateSongRequestSchema))
+  async updateSong(data: playlist.UpdateSongRequest): Promise<playlist.PlaylistResponse> {
     try {
       let newSong = {
         duration: data.newSong.duration,
@@ -55,54 +47,54 @@ export class PlaylistController {
       await this.service.updateSong(data.id, newSong);
       return { status: 'OK' };
     } catch (ex) {
-      throw new RpcException(ex);
+      this.handleServiceErrors(ex)
     }
   }
 
   @GrpcMethod('PlaylistService', 'DeleteSong')
-  @UsePipes(new JoiValidationPipe(idRequestSchema))
-  async deleteSong(data: IdRequest): Promise<PlaylistResponse> {
+  @UsePipes(new JoiValidationPipe(schemas.idRequestSchema))
+  async deleteSong(data: playlist.IdRequest): Promise<playlist.PlaylistResponse> {
     try {
       await this.service.deleteSong(data.id);
       return { status: 'OK' };
     } catch (ex) {
-      throw new RpcException(ex);
+      this.handleServiceErrors(ex)
     }
   }
 
   @GrpcMethod('PlaylistService', 'Clear')
-  async clear(): Promise<PlaylistResponse> {
+  async clear(): Promise<playlist.PlaylistResponse> {
     try {
       await this.service.clear();
       return { status: 'OK' };
     } catch (ex) {
-      throw new RpcException(ex);
+      this.handleServiceErrors(ex)
     }
   }
 
   @GrpcMethod('PlaylistService', 'Play')
-  async play(): Promise<PlaylistResponse> {
+  async play(): Promise<playlist.PlaylistResponse> {
     try {
       await this.service.play();
       return { status: 'OK' };
     } catch (ex) {
-      throw new RpcException(ex);
+      this.handleServiceErrors(ex)
     }
   }
 
   @GrpcMethod('PlaylistService', 'Pause')
-  async pause(): Promise<PlaylistResponse> {
+  async pause(): Promise<playlist.PlaylistResponse> {
     try {
       await this.service.pause();
       return { status: 'OK' };
     } catch (ex) {
-      throw new RpcException(ex);
+      this.handleServiceErrors(ex)
     }
   }
 
   @GrpcMethod('PlaylistService', 'AddSong')
-  @UsePipes(new JoiValidationPipe(songRequestSchema))
-  async addSong(data: AddSongRequest): Promise<PlaylistResponse> {
+  @UsePipes(new JoiValidationPipe(schemas.songRequestSchema))
+  async addSong(data: playlist.AddSongRequest): Promise<playlist.PlaylistResponse> {
     try {
       await this.service.addSong(<Omit<ISong, 'id'>>{
         title: data.title,
@@ -110,13 +102,13 @@ export class PlaylistController {
       });
       return { status: 'OK' };
     } catch (ex) {
-      throw new RpcException(ex);
+      this.handleServiceErrors(ex)
     }
   }
 
   @GrpcMethod('PlaylistService', 'AddSongs')
-  @UsePipes(new JoiValidationPipe(addSongsRequestSchema))
-  async addSongs(data: AddSongsRequest): Promise<PlaylistResponse> {
+  @UsePipes(new JoiValidationPipe(schemas.addSongsRequestSchema))
+  async addSongs(data: playlist.AddSongsRequest): Promise<playlist.PlaylistResponse> {
     try {
       let songs: Omit<ISong, 'id'>[] = [];
       data.songs.forEach((song) =>
@@ -126,27 +118,36 @@ export class PlaylistController {
       await this.service.addSongs(songs);
       return { status: 'OK' };
     } catch (ex) {
-      throw new RpcException(ex);
+      this.handleServiceErrors(ex)
     }
   }
 
   @GrpcMethod('PlaylistService', 'Next')
-  async next(): Promise<PlaylistResponse> {
+  async next(): Promise<playlist.PlaylistResponse> {
     try {
       await this.service.next();
       return { status: 'OK' };
     } catch (ex) {
-      throw new RpcException(ex);
+      this.handleServiceErrors(ex)
     }
   }
 
   @GrpcMethod('PlaylistService', 'Prev')
-  async prev(): Promise<PlaylistResponse> {
+  async prev(): Promise<playlist.PlaylistResponse> {
     try {
       await this.service.prev();
       return { status: 'OK' };
     } catch (ex) {
-      throw new RpcException(ex);
+      this.handleServiceErrors(ex)
     }
   }
+
+  handleServiceErrors = (ex) => {
+    if (ex == serviceEx.NoSongIsPlayingException) throw new grpcEx.GrpcFailedPreconditionException(ex);
+    else if (ex == serviceEx.NoSongsException) throw new grpcEx.GrpcFailedPreconditionException(ex);
+    else if (ex == serviceEx.SongNotFoundException) throw new grpcEx.GrpcNotFoundException(ex);
+    else if (ex == serviceEx.UnableToDeleteException) throw new grpcEx.GrpcFailedPreconditionException(ex);
+    else throw new grpcEx.GrpcInternalException(ex);
+  }
+
 }

@@ -1,6 +1,6 @@
 import { PipeTransform, Injectable, ArgumentMetadata } from '@nestjs/common';
 import { ObjectSchema } from 'joi';
-import { RpcException } from '@nestjs/microservices';
+import { GrpcInvalidArgumentException } from '../utils/grpc.exceptions';
 
 @Injectable()
 export class JoiValidationPipe implements PipeTransform {
@@ -12,7 +12,7 @@ export class JoiValidationPipe implements PipeTransform {
     // only validate parameter called "data"
     if (metadata.data === 'data' && error) {
       const message = `data validation failed: ${error}`;
-      throw new RpcException(message);
+      throw new GrpcInvalidArgumentException(message);
     }
 
     return value;

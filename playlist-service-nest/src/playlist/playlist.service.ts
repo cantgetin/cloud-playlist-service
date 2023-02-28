@@ -3,6 +3,12 @@ import { ISongNode, SongNode } from './songNode.interface';
 import { ISong } from './song.interface';
 import { RepositoryService } from '../repository/repository.service';
 import { Inject } from '@nestjs/common';
+import {
+  NoSongIsPlayingException,
+  NoSongsException,
+  SongNotFoundException,
+  UnableToDeleteException,
+} from './playlist.service.errors';
 
 class PlaylistService implements IPlaylistService {
   head: ISongNode | null;
@@ -103,7 +109,7 @@ class PlaylistService implements IPlaylistService {
           this.currentSong.song.id,
         );
         await this.repository.updatePlaylistRemainingTime(this.remainingTime);
-      } else throw new Error('There are no songs in that playlist');
+      } else throw new NoSongsException('There are no songs in that playlist');
     }
 
     await this.repository.updatePlaylistPlayingState(true);
@@ -121,7 +127,8 @@ class PlaylistService implements IPlaylistService {
   }
 
   async pause(): Promise<void> {
-    if (!this.currentSong) throw new Error('No song is playing');
+    if (!this.currentSong)
+      throw new NoSongIsPlayingException('No song is playing');
     if (this.playTimer) {
       clearInterval(this.playTimer);
       const elapsedTime =
@@ -138,7 +145,8 @@ class PlaylistService implements IPlaylistService {
   }
 
   async next(): Promise<void> {
-    if (!this.currentSong) throw new Error('No song is playing');
+    if (!this.currentSong)
+      throw new NoSongIsPlayingException('No song is playing');
     if (!this.currentSong.next) this.currentSong = this.head;
     else this.currentSong = this.currentSong.next;
 
@@ -149,7 +157,8 @@ class PlaylistService implements IPlaylistService {
   }
 
   async prev(): Promise<void> {
-    if (!this.currentSong) throw new Error('No song is playing');
+    if (!this.currentSong)
+      throw new NoSongIsPlayingException('No song is playing');
     if (!this.currentSong.prev) this.currentSong = this.tail;
     else this.currentSong = this.currentSong.prev;
 
@@ -168,7 +177,10 @@ class PlaylistService implements IPlaylistService {
 
   async getSongById(id: number): Promise<ISong> {
     let song = await this.repository.getSongById(id);
-    if (!song) throw new Error(`Song with ID ${id} not found in playlist`);
+    if (!song)
+      throw new SongNotFoundException(
+        `Song with ID ${id} not found in playlist`,
+      );
     return <ISong>{ id: song.id, title: song.title, duration: song.duration };
   }
 
@@ -195,13 +207,18 @@ class PlaylistService implements IPlaylistService {
             this.currentSong.song.duration - this.remainingTime;
           this.remainingTime = song.duration - timeThatSongPlayed;
         }
-      } else throw new Error(`Song with ID ${id} not found in playlist`);
+      } else
+        throw new SongNotFoundException(
+          `Song with ID ${id} not found in playlist`,
+        );
     }
   }
 
   async deleteSong(id: number): Promise<void> {
     if (this.currentSong && this.currentSong.song.id == id)
-      throw new Error("You can't delete the song that is currently playing.");
+      throw new UnableToDeleteException(
+        "You can't delete the song that is currently playing.",
+      );
 
     await this.repository.deleteSong(id);
 
@@ -212,7 +229,7 @@ class PlaylistService implements IPlaylistService {
         if (node.song.id === id) {
           songFound = true;
           if (node === this.currentSong)
-            throw new Error(
+            throw new UnableToDeleteException(
               "You can't delete the song that is currently playing.",
             );
           if (node === this.head) this.head = node.next;
@@ -228,7 +245,9 @@ class PlaylistService implements IPlaylistService {
 
       const newHead = deleteNode(this.head);
       if (!songFound)
-        throw new Error(`Song with ID ${id} not found in playlist`);
+        throw new SongNotFoundException(
+          `Song with ID ${id} not found in playlist`,
+        );
       this.head = newHead;
     }
   }
