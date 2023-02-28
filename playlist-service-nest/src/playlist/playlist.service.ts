@@ -2,7 +2,7 @@ import IPlaylistService from './playlist.interface';
 import { ISongNode, SongNode } from './songNode.interface';
 import { ISong } from './song.interface';
 import { RepositoryService } from '../repository/repository.service';
-import { Inject } from '@nestjs/common';
+import { Inject, Logger } from '@nestjs/common';
 import {
   NoSongIsPlayingException,
   NoSongsException,
@@ -17,6 +17,7 @@ class PlaylistService implements IPlaylistService {
   currentSongStartTime: Date | null;
   playTimer: NodeJS.Timer | null;
   remainingTime: number | null;
+  logger: Logger;
 
   constructor(
     @Inject('RepositoryService') private readonly repository: RepositoryService,
@@ -27,9 +28,11 @@ class PlaylistService implements IPlaylistService {
     this.currentSongStartTime = null;
     this.playTimer = null;
     this.remainingTime = null;
+    this.logger = new Logger(PlaylistService.name);
   }
 
   async onModuleInit() {
+    this.logger.log('Initialising service data..');
     let songs = await this.repository.getAllSongs();
     if (!songs) return;
 
@@ -67,7 +70,7 @@ class PlaylistService implements IPlaylistService {
     let isPlaying = await this.repository.getPlaylistPlayingState();
     if (!isPlaying) return;
 
-    console.log(`Now playing: ${this.currentSong!.song.title}`);
+    this.logger.log(`Now playing: ${this.currentSong!.song.title}`);
     this.playTimer = setInterval(async () => {
       this.remainingTime!--;
       await this.repository.updatePlaylistRemainingTime(this.remainingTime);
@@ -93,7 +96,7 @@ class PlaylistService implements IPlaylistService {
       this.tail.next = newNode;
       this.tail = newNode;
     }
-    console.log('Added new song: ' + song.title);
+    this.logger.log('Added new song: ' + song.title);
   }
 
   async addSongs(songs: ISong[]): Promise<void> {
@@ -114,7 +117,7 @@ class PlaylistService implements IPlaylistService {
 
     await this.repository.updatePlaylistPlayingState(true);
     this.currentSongStartTime = new Date();
-    console.log(`Now playing: ${this.currentSong!.song.title}`);
+    this.logger.log(`Now playing: ${this.currentSong!.song.title}`);
 
     if (this.playTimer) clearInterval(this.playTimer);
     this.playTimer = setInterval(async () => {
@@ -138,7 +141,7 @@ class PlaylistService implements IPlaylistService {
       this.currentSongStartTime = null;
       await this.repository.updatePlaylistPlayingState(false);
       await this.repository.updatePlaylistRemainingTime(this.remainingTime);
-      console.log(
+      this.logger.log(
         `Paused playback at ${this.currentSong?.song.title} (${this.remainingTime}s remaining)`,
       );
     }
@@ -201,6 +204,7 @@ class PlaylistService implements IPlaylistService {
       if (song) {
         song.duration = newSong.duration;
         song.title = newSong.title;
+        this.logger.log(`Updated song: ${song.title}`);
 
         if (this.currentSong && this.currentSong.song.id == id) {
           let timeThatSongPlayed: number =
@@ -236,7 +240,7 @@ class PlaylistService implements IPlaylistService {
           if (node === this.tail) this.tail = node.prev;
           if (node.prev) node.prev.next = node.next;
           if (node.next) node.next.prev = node.prev;
-          console.log(`Deleted song: ${node.song.title}`);
+          this.logger.log(`Deleted song: ${node.song.title}`);
           return node.next;
         }
         node.next = deleteNode(node.next);

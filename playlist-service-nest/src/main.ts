@@ -3,7 +3,7 @@ import { AppModule } from './app.module';
 import { join } from 'path';
 
 import { Transport, MicroserviceOptions } from '@nestjs/microservices';
-import { INestMicroservice } from '@nestjs/common';
+import { INestMicroservice, Logger } from '@nestjs/common';
 
 async function bootstrap() {
   const app: INestMicroservice =
@@ -24,7 +24,7 @@ async function bootstrap() {
 
   return app
     .listen()
-    .then(() => console.log('Microservice playlist is listening'));
+    .then(() => new Logger('Main').log('Microservice playlist is listening'));
 }
 
 bootstrap();
