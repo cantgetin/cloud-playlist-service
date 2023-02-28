@@ -55,8 +55,10 @@ class Playlist implements IPlaylist {
   pause(): void {
     if (!this.currentSong)
       throw new Error('No song is playing');
+
     if (this.playTimer) {
       clearInterval(this.playTimer);
+      this.playTimer = null;
       const elapsedTime =
         new Date().getTime() - (this.currentSongStartTime?.getTime() ?? 0);
       this.remainingTime =
@@ -66,6 +68,7 @@ class Playlist implements IPlaylist {
         `Paused playback at ${this.currentSong?.song.title} (${this.remainingTime}s remaining)`,
       );
     }
+    else throw Error('Already on pause')
   }
 
   next(): void {

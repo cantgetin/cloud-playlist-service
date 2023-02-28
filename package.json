@@ -1,11 +1,10 @@
 {
-  "name": "untitled7",
+  "name": "playlist-service",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
     "startService": "cd playlist-service-nest & npm run start:dev",
-    "startClientCli": "cd client & node index.js"
+    "startClientCli": "cd client & npm run start"
   },
   "keywords": [],
   "author": "",

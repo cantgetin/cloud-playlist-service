@@ -8,13 +8,13 @@ export interface Song {
 }
 
 export interface SongRes {
-  id: number;
-  duration: number;
-  title: string;
+  id?: number;
+  duration?: number;
+  title?: string;
 }
 
 export interface SongsRes {
-  songs: SongRes[];
+  songs?: SongRes[];
 }
 
 export interface ResponseObject {
@@ -69,16 +69,12 @@ export class PlaylistClient {
     this.playlistService.addSong({ songs: [...songs] }, callback);
   }
 
-  async getAllSongs(callback: (error: ServiceError, response: ResponseObject) => void): Promise<SongsRes> {
-    return new Promise<SongsRes>((resolve) => {
-      this.playlistService.getAllSongs(callback);
-    });
+  getAllSongs(callback: (error: ServiceError, response: SongsRes) => void) {
+    this.playlistService.getAllSongs({}, callback);
   }
 
-  async getSongById(id: number, callback: (error: ServiceError, response: ResponseObject) => void): Promise<SongRes> {
-    return new Promise<SongRes>((resolve) => {
-      this.playlistService.getSongById({ id: id }, callback);
-    });
+  getSongById(id: number, callback: (error: ServiceError, response: SongRes) => void) {
+    this.playlistService.getSongById({ id: id }, callback);
   }
 
   updateSong(id: number, newSong: Song, callback: (error: ServiceError, response: ResponseObject) => void) {

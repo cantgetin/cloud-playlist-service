@@ -2,10 +2,10 @@
   "name": "playlist-module",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
     "duration": "ts-node src/duration.ts",
-    "non-blocking": "ts-node src/non-blocking.ts"
+    "non-blocking": "ts-node src/non-blocking.ts",
+    "start": "ts-node src/cli.ts"
   },
   "keywords": [],
   "author": "",

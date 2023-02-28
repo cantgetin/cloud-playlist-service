@@ -134,6 +134,7 @@ class PlaylistService implements IPlaylistService {
       throw new NoSongIsPlayingException('No song is playing');
     if (this.playTimer) {
       clearInterval(this.playTimer);
+      this.playTimer = null;
       const elapsedTime =
         new Date().getTime() - (this.currentSongStartTime?.getTime() ?? 0);
       this.remainingTime =
