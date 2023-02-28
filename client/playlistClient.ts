@@ -22,12 +22,12 @@ export interface ResponseObject {
 }
 
 export class PlaylistClient {
-  grpcPort: number;
+  serviceUrl: string;
   protoPath: string;
   playlistService: any;
 
-  constructor(grpcPort: number, protoPath: string) {
-    this.grpcPort = grpcPort;
+  constructor(serviceUrl: string, protoPath: string) {
+    this.serviceUrl = serviceUrl;
     this.protoPath = protoPath;
 
     const packageDefinition = protoLoader.loadSync(
@@ -42,7 +42,7 @@ export class PlaylistClient {
 
     const protoDescriptor = grpc.loadPackageDefinition(packageDefinition);
     // @ts-ignore
-    this.playlistService = new protoDescriptor.playlist.PlaylistService(`0.0.0.0:${this.grpcPort}`, grpc.credentials.createInsecure());
+    this.playlistService = new protoDescriptor.playlist.PlaylistService(this.serviceUrl, grpc.credentials.createInsecure());
   }
 
   play(callback: (error: ServiceError, response: ResponseObject) => void) {

@@ -1,7 +1,7 @@
 import { PlaylistClient, Song } from './playlistClient';
 import * as readline from 'readline';
 
-const client = new PlaylistClient(50051, '../proto/playlist.proto');
+const client = new PlaylistClient('0.0.0.0:50051', '../proto/playlist.proto');
 
 const readLine = readline.createInterface(
   {
