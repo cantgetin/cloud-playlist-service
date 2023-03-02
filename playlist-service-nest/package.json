@@ -32,6 +32,7 @@
     "joi": "^17.8.3",
     "nestjs-pino": "^3.1.2",
     "nestjs-proto-gen-ts": "^1.0.21",
+    "pg": "^8.9.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.2.0",
     "sqlite3": "^5.1.4"

@@ -6,8 +6,12 @@ export const databaseProviders = [
     provide: 'SEQUELIZE',
     useFactory: async () => {
       const sequelize = new Sequelize({
-        dialect: 'sqlite',
-        storage: 'playlist.db',
+        dialect: 'postgres',
+        host: "db",
+        port: 5432,
+        username: "postgres",
+        password: "postgres",
+        database: "playlist",
         logging: false,
       });
       sequelize.addModels([Song, PlaylistPropsKeyValue]);

@@ -15,7 +15,7 @@ ADD https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/v0.3.2
 
 RUN chmod +x /bin/grpc_health_probe
 
-WORKDIR /usr/share/users-svc
+WORKDIR /usr/share/playlist-svc
 
 COPY --from=build /usr/share/playlist-svc .
 
