@@ -10,7 +10,7 @@ async function bootstrap() {
     await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
       transport: Transport.GRPC,
       options: {
-        url: '0.0.0.0:50051',
+        url: `${process.env.GRPC_HOST}:${process.env.GRPC_PORT}`,
         package: 'playlist',
         protoPath: join(__dirname, './proto/playlist.proto'),
         loader: {
