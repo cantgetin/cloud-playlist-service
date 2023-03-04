@@ -3,7 +3,7 @@ import { PlaylistPropsKeyValue, Song } from '../database/database.models';
 import IRepositoryService from './repository.interface';
 
 @Injectable()
-export class RepositoryService implements IRepositoryService{
+export class RepositoryService implements IRepositoryService {
   constructor(
     @Inject('SONGS_REPOSITORY')
     private songsRepository: typeof Song,
