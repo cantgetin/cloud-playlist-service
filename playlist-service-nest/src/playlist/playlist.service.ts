@@ -69,7 +69,6 @@ class PlaylistService implements IPlaylistService {
     this.currentSong = findSong(this.head);
 
     if (!props.isPlaying) return;
-    console.log(props);
 
     this.logger.log(`Now playing: ${this.currentSong!.song.title}`);
     this.playTimer = setInterval(async () => {

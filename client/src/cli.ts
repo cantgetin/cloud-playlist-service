@@ -59,6 +59,13 @@ async function handleCommand(commandString: string) {
         client.deleteSong(Number(id), cb);
       });
       break;
+    case 'status':
+        client.status((error: any, response: any) => {
+          if (response) console.log(`Method called, Response: ${JSON.stringify(response)}`);
+          if (error) console.log(`Method called, Error: ${error}`);
+          init();
+        });
+      break;
     case 'updateSong':
       readLine.question('enter the id: ', async (id) => {
         readLine.question('enter new song title: ', async (title) => {
@@ -86,7 +93,7 @@ function askQuestion(q: string) {
   });
 }
 
-console.log('Available commands: play, pause, next, prev, addSong, getSong, getAllSongs, updateSong, deleteSong, clear, exit');
+console.log('Available commands: play, pause, next, prev, addSong, getSong, getAllSongs, updateSong, deleteSong, clear, status, exit');
 
 function init() {
   askQuestion('>')

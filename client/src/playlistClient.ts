@@ -1,6 +1,7 @@
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
 import { ServiceError } from '@grpc/grpc-js';
+import { Status } from '@grpc/grpc-js/build/src/constants';
 
 export interface Song {
   duration: number;
@@ -19,6 +20,12 @@ export interface SongsRes {
 
 export interface ResponseObject {
   status: string;
+}
+
+export interface StatusObject {
+  currentSong: SongRes;
+  isPlaying: boolean;
+  remainingTime: number;
 }
 
 export class PlaylistClient {
@@ -87,5 +94,9 @@ export class PlaylistClient {
 
   clear(callback: (error: ServiceError, response: ResponseObject) => void) {
     this.playlistService.clear({}, callback);
+  }
+
+  status(callback: (error: ServiceError, response: StatusObject) => void) {
+    this.playlistService.status({}, callback);
   }
 }
