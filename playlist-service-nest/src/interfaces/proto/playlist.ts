@@ -42,7 +42,7 @@ export namespace playlist {
       metadata?: Metadata,
       ...rest: any[]
     ): Observable<SongsResponse>;
-    getSongById(
+    getSong(
       data: IdRequest,
       metadata?: Metadata,
       ...rest: any[]
@@ -62,6 +62,11 @@ export namespace playlist {
       metadata?: Metadata,
       ...rest: any[]
     ): Observable<PlaylistResponse>;
+    status(
+      data: google.protobuf.Empty,
+      metadata?: Metadata,
+      ...rest: any[]
+    ): Observable<StatusResponse>;
   }
   export interface IdRequest {
     id?: number;
@@ -87,6 +92,11 @@ export namespace playlist {
   }
   export interface PlaylistResponse {
     status?: string;
+  }
+  export interface StatusResponse {
+    currentSong?: playlist.SongResponse;
+    isPlaying?: boolean;
+    remainingTime?: number;
   }
 }
 export namespace google {

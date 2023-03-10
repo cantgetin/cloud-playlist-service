@@ -1,4 +1,5 @@
 import { ISong } from './song.interface';
+import { IStatus } from './status.interface';
 
 interface IPlaylistService {
   addSong(song: Omit<ISong, 'id'>): void;
@@ -8,10 +9,11 @@ interface IPlaylistService {
   next(): void;
   prev(): void;
   getAllSongs(): Promise<ISong[]>;
-  getSongById(id: number): Promise<ISong>;
+  getSong(id: number): Promise<ISong>;
   updateSong(id: number, newSong: Omit<ISong, 'id'>): void;
   deleteSong(id: number): void;
   clear(): void;
+  status(): Promise<IStatus>;
 }
 
 export default IPlaylistService;

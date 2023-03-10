@@ -73,8 +73,8 @@ export class PlaylistClient {
     this.playlistService.getAllSongs({}, callback);
   }
 
-  getSongById(id: number, callback: (error: ServiceError, response: SongRes) => void) {
-    this.playlistService.getSongById({ id: id }, callback);
+  getSong(id: number, callback: (error: ServiceError, response: SongRes) => void) {
+    this.playlistService.getSong({ id: id }, callback);
   }
 
   updateSong(id: number, newSong: Song, callback: (error: ServiceError, response: ResponseObject) => void) {

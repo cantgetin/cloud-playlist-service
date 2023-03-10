@@ -9,6 +9,8 @@ import {
   SongNotFoundException,
   UnableToDeleteException,
 } from './playlist.service.errors';
+import { playlist } from '../interfaces/proto/playlist';
+import { IStatus } from './status.interface';
 
 class PlaylistService implements IPlaylistService {
   head: ISongNode | null;
@@ -33,7 +35,7 @@ class PlaylistService implements IPlaylistService {
 
   async onModuleInit() {
     this.logger.log('Initialising service data..');
-    let songs = await this.repository.getAllSongs();
+    const songs = await this.repository.getAllSongs();
     if (!songs) return;
 
     songs.forEach((song) => {
@@ -52,23 +54,22 @@ class PlaylistService implements IPlaylistService {
       }
     });
 
-    let remainingTime = await this.repository.getPlaylistRemainingTime();
-    if (remainingTime) this.remainingTime = remainingTime.value;
+    const props = await this.repository.getPlaylistProps();
+    if (props.remainingTime) this.remainingTime = props.remainingTime;
 
-    let currentSongId = await this.repository.getPlaylistCurrentSongId();
-    if (!currentSongId) return;
+    if (!props.currentSongId) return;
 
     function findSong(node) {
       if (!node) return null;
-      if (node.song.id === currentSongId.value) {
+      if (node.song.id === props.currentSongId) {
         return node;
       }
     }
 
     this.currentSong = findSong(this.head);
 
-    let isPlaying = await this.repository.getPlaylistPlayingState();
-    if (!isPlaying) return;
+    if (!props.isPlaying) return;
+    console.log(props);
 
     this.logger.log(`Now playing: ${this.currentSong!.song.title}`);
     this.playTimer = setInterval(async () => {
@@ -81,7 +82,7 @@ class PlaylistService implements IPlaylistService {
   }
 
   async addSong(song: ISong): Promise<void> {
-    let songWithId = await this.repository.addSong(song);
+    const songWithId = await this.repository.addSong(song);
 
     const newNode = SongNode(<ISong>{
       id: songWithId.id,
@@ -108,13 +109,11 @@ class PlaylistService implements IPlaylistService {
       if (this.head) {
         this.currentSong = this.head;
         this.remainingTime = this.currentSong!.song.duration;
-        await this.repository.updatePlaylistCurrentSongId(
-          this.currentSong.song.id,
-        );
         await this.repository.updatePlaylistRemainingTime(this.remainingTime);
       } else throw new NoSongsException('There are no songs in that playlist');
     }
 
+    await this.repository.updatePlaylistCurrentSongId(this.currentSong.song.id);
     await this.repository.updatePlaylistPlayingState(true);
     this.currentSongStartTime = new Date();
     this.logger.log(`Now playing: ${this.currentSong!.song.title}`);
@@ -138,7 +137,7 @@ class PlaylistService implements IPlaylistService {
       const elapsedTime =
         new Date().getTime() - (this.currentSongStartTime?.getTime() ?? 0);
       this.remainingTime =
-        this.currentSong?.song.duration! - Math.floor(elapsedTime / 1000);
+        this.currentSong?.song.duration - Math.floor(elapsedTime / 1000);
       this.currentSongStartTime = null;
       await this.repository.updatePlaylistPlayingState(false);
       await this.repository.updatePlaylistRemainingTime(this.remainingTime);
@@ -173,14 +172,14 @@ class PlaylistService implements IPlaylistService {
   }
 
   async getAllSongs(): Promise<ISong[]> {
-    let songs = await this.repository.getAllSongs();
+    const songs = await this.repository.getAllSongs();
     return songs.map(
       (s) => <ISong>{ id: s.id, title: s.title, duration: s.duration },
     );
   }
 
-  async getSongById(id: number): Promise<ISong> {
-    let song = await this.repository.getSongById(id);
+  async getSong(id: number): Promise<ISong> {
+    const song = await this.repository.getSong(id);
     if (!song)
       throw new SongNotFoundException(
         `Song with ID ${id} not found in playlist`,
@@ -192,7 +191,7 @@ class PlaylistService implements IPlaylistService {
     await this.repository.updateSong(id, newSong);
 
     if (this.head) {
-      let songs: ISong[] = [];
+      const songs: ISong[] = [];
 
       function addSongs(node: ISongNode) {
         songs.push(node.song);
@@ -201,14 +200,14 @@ class PlaylistService implements IPlaylistService {
 
       addSongs(this.head);
 
-      let song = songs.find((el) => el.id == id);
+      const song = songs.find((el) => el.id == id);
       if (song) {
         song.duration = newSong.duration;
         song.title = newSong.title;
         this.logger.log(`Updated song: ${song.title}`);
 
         if (this.currentSong && this.currentSong.song.id == id) {
-          let timeThatSongPlayed: number =
+          const timeThatSongPlayed: number =
             this.currentSong.song.duration - this.remainingTime;
           this.remainingTime = song.duration - timeThatSongPlayed;
         }
@@ -266,6 +265,17 @@ class PlaylistService implements IPlaylistService {
     this.currentSongStartTime = null;
     this.playTimer = null;
     this.remainingTime = null;
+  }
+
+  async status(): Promise<IStatus> {
+    const props = await this.repository.getPlaylistProps();
+    const song = await this.repository.getSong(props.currentSongId);
+
+    return <IStatus>{
+      isPlaying: props.isPlaying,
+      currentSong: <ISong>song,
+      remainingTime: props.remainingTime,
+    };
   }
 }
 

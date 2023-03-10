@@ -40,9 +40,9 @@ async function handleCommand(commandString: string) {
         });
       });
       break;
-    case 'getSongById':
+    case 'getSong':
       readLine.question('enter the id: ', async (id) => {
-        client.getSongById(Number(id), (err, res) => {
+        client.getSong(Number(id), (err, res) => {
           if (res) console.table(res);
           if (err) console.log(`Method called, Error: ${err}`);
         });
@@ -86,7 +86,7 @@ function askQuestion(q: string) {
   });
 }
 
-console.log('Available commands: play, pause, next, prev, addSong, getSongById, getAllSongs, updateSong, deleteSong, clear, exit');
+console.log('Available commands: play, pause, next, prev, addSong, getSong, getAllSongs, updateSong, deleteSong, clear, exit');
 
 function init() {
   askQuestion('>')

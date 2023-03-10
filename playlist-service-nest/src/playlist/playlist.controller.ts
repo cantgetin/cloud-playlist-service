@@ -13,6 +13,8 @@ import { playlist } from '../interfaces/proto/playlist';
 import { ISong } from './song.interface';
 import { GrpcLoggingInterceptor } from '../utils/grpc.logging.interceptor';
 import { GrpcExceptionFilter } from '../utils/grpc.exceptions.filter';
+import StatusResponse = playlist.StatusResponse;
+import SongResponse = playlist.SongResponse;
 
 @Controller()
 @UseFilters(GrpcExceptionFilter)
@@ -27,10 +29,10 @@ export class PlaylistController {
     return { songs: await this.service.getAllSongs() };
   }
 
-  @GrpcMethod('PlaylistService', 'GetSongById')
+  @GrpcMethod('PlaylistService', 'GetSong')
   @UsePipes(new JoiValidationPipe(schemas.idRequestSchema))
-  async getSongById(data: playlist.IdRequest): Promise<playlist.SongResponse> {
-    return await this.service.getSongById(data.id);
+  async getSong(data: playlist.IdRequest): Promise<playlist.SongResponse> {
+    return await this.service.getSong(data.id);
   }
 
   @GrpcMethod('PlaylistService', 'UpdateSong')
@@ -109,5 +111,15 @@ export class PlaylistController {
   async prev(): Promise<playlist.PlaylistResponse> {
     await this.service.prev();
     return { status: 'OK' };
+  }
+
+  @GrpcMethod('PlaylistService', 'Status')
+  async status(): Promise<StatusResponse> {
+    const status = await this.service.status();
+    return <StatusResponse>{
+      currentSong: <SongResponse>status.currentSong,
+      isPlaying: status.isPlaying,
+      remainingTime: status.remainingTime,
+    };
   }
 }

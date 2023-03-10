@@ -11,10 +11,11 @@ service PlaylistService {
   rpc Next (google.protobuf.Empty) returns (PlaylistResponse) {}
   rpc Prev (google.protobuf.Empty) returns (PlaylistResponse) {}
   rpc GetAllSongs (google.protobuf.Empty) returns (SongsResponse) {}
-  rpc GetSongById (IdRequest) returns (SongResponse) {}
+  rpc GetSong (IdRequest) returns (SongResponse) {}
   rpc UpdateSong (UpdateSongRequest) returns (PlaylistResponse) {}
   rpc DeleteSong (IdRequest) returns (PlaylistResponse) {}
   rpc Clear (google.protobuf.Empty) returns (PlaylistResponse) {}
+  rpc Status (google.protobuf.Empty) returns (StatusResponse) {}
 }
 
 message IdRequest {
@@ -47,4 +48,10 @@ message SongResponse {
 
 message PlaylistResponse {
   string status = 1;
+}
+
+message StatusResponse {
+  SongResponse currentSong = 1;
+  bool isPlaying = 2;
+  int32 remainingTime = 3;
 }

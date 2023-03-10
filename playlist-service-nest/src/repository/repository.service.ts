@@ -10,12 +10,14 @@ export class RepositoryService implements IRepositoryService {
     @Inject('PLAYLISTS_REPOSITORY')
     private playlistPropsRepository: typeof PlaylistPropsKeyValue,
   ) {}
+
   async addSong(newSong: { title: string; duration: number }): Promise<Song> {
     return this.songsRepository.create({
       title: newSong.title,
       duration: newSong.duration,
     });
   }
+
   async updatePlaylistRemainingTime(
     remainingTime: number,
   ): Promise<[PlaylistPropsKeyValue, boolean]> {
@@ -37,31 +39,24 @@ export class RepositoryService implements IRepositoryService {
   async updatePlaylistPlayingState(
     isPlaying: boolean,
   ): Promise<[PlaylistPropsKeyValue, boolean]> {
-    let isPlayingInt = isPlaying ? 1 : 0;
+    const isPlayingInt = isPlaying ? 1 : 0;
 
     return this.playlistPropsRepository.upsert({
       key: 'isPlaying',
       value: isPlayingInt,
     });
   }
-  async getPlaylistRemainingTime(): Promise<PlaylistPropsKeyValue> {
-    return this.playlistPropsRepository.findOne({
-      where: { key: 'remainingTime' },
-    });
-  }
-
-  async getPlaylistCurrentSongId(): Promise<PlaylistPropsKeyValue> {
-    return this.playlistPropsRepository.findOne({
-      where: { key: 'currentSongId' },
-    });
-  }
-
-  async getPlaylistPlayingState(): Promise<boolean> {
-    let isPlaying = await this.playlistPropsRepository.findOne({
-      where: { key: 'isPlaying' },
-    });
-    if (!isPlaying) return false;
-    return isPlaying.value == 1;
+  async getPlaylistProps(): Promise<{
+    remainingTime: number;
+    currentSongId: number;
+    isPlaying: boolean;
+  }> {
+    const props = await this.playlistPropsRepository.findAll();
+    return {
+      remainingTime: props.find((p) => p.key == 'remainingTime').value,
+      currentSongId: props.find((p) => p.key == 'currentSongId').value,
+      isPlaying: props.find((p) => p.key == 'isPlaying').value == 1,
+    };
   }
 
   async deleteSong(id: number): Promise<number> {
@@ -72,7 +67,7 @@ export class RepositoryService implements IRepositoryService {
     return this.songsRepository.findAll<Song>();
   }
 
-  async getSongById(id: number): Promise<Song> {
+  async getSong(id: number): Promise<Song> {
     return this.songsRepository.findByPk(id);
   }
 
@@ -85,6 +80,7 @@ export class RepositoryService implements IRepositoryService {
       { where: { id: id } },
     );
   }
+
   async clear(): Promise<number> {
     await this.playlistPropsRepository.destroy({
       where: {},
